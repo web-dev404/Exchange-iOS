@@ -6,3 +6,8 @@
 //
 
 import Foundation
+
+struct Currency {
+    let name: String
+    let icon: String
+}
