@@ -8,7 +8,6 @@
 import UIKit
 
 final class CurrencyPickerViewController: UIViewController {
-    private lazy var titleLabel = TextFactory(text: "Choose currency", color: .text, fontWeight: .semibold, fontSize: 24).createText()
     private lazy var customTableView: UITableView = {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -20,21 +19,22 @@ final class CurrencyPickerViewController: UIViewController {
         return tableView
     }()
     
-    private var viewModel: CurrencyPickerViewModelProtocol! {
-        didSet {
-            viewModel.getCurrencies { [weak self] in
-                self?.customTableView.reloadData()
-            }
-        }
-    }
+    private let viewModel: CurrencyPickerViewModelProtocol = CurrencyPickerViewModel()
         
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        viewModel = CurrencyPickerViewModel()
+        viewModel.getCurrencies { [weak self] in
+            self?.customTableView.reloadData()
+        }
         
+        setupLayout()
+    }
+    
+    private func setupLayout() {
         view.backgroundColor = UIColor(named: "Background")
         
+        let titleLabel = TextFactory(text: "Choose currency", color: .text, fontWeight: .semibold, fontSize: 24).createText()
         view.addSubview(titleLabel)
         view.addSubview(customTableView)
         

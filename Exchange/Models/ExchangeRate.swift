@@ -6,3 +6,10 @@
 //
 
 import Foundation
+
+struct ExchangeRate {
+    let ask: Double
+    let bid: Double
+    let book: String
+    let date: Date
+}

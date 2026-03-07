@@ -43,8 +43,6 @@ final class CurrencyCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupLayout()
-        
-        contentView.heightAnchor.constraint(equalToConstant: 62).isActive = true
     }
     
     required init?(coder: NSCoder) {
@@ -64,6 +62,8 @@ final class CurrencyCell: UITableViewCell {
     }
     
     private func setupLayout() {
+        contentView.heightAnchor.constraint(equalToConstant: 62).isActive = true
+        
         contentView.addSubview(currencyIconView)
         contentView.addSubview(currencyLabel)
         contentView.addSubview(currencyRadio)

@@ -7,9 +7,24 @@
 
 import Foundation
 
+struct CalculatorViewState {
+    var fromCurrency: Currency
+    let toCurrency: Currency
+    let fromAmount: Double
+    let toAmount: Double
+    let exchangeRate: ExchangeRate?
+}
+
 protocol CalculatorViewModelProtocol {
-    var fromCurrency: Currency { get }
-    var toCurrency: Currency { get }
-    var fromAmount: Double { get }
-    var toAmount: Double { get }
+    var state: CalculatorViewState { get }
+}
+
+final class CalculatorViewModel: CalculatorViewModelProtocol {
+    var state: CalculatorViewState
+    
+    init() {
+        let currencies = DataStore.shared.currencies
+        
+        self.state = CalculatorViewState(fromCurrency: Currency(name: "USDc", icon: "us"), toCurrency: currencies[0], fromAmount: 0, toAmount: 0, exchangeRate: nil)
+    }
 }
