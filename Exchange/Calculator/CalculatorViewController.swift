@@ -34,7 +34,7 @@ final class CalculatorViewController: UIViewController {
     private let fromCardView = CurrencyCardView()
     private let toCardView = CurrencyCardView()
     
-    private let viewModel: CalculatorViewModelProtocol = CalculatorViewModel()
+    private var viewModel: CalculatorViewModelProtocol = CalculatorViewModel()
         
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -56,11 +56,27 @@ final class CalculatorViewController: UIViewController {
         toCardView.onSelectTapped = { [weak self] in
             self?.openBottomSheet()
         }
+        
+        Task {
+            await viewModel.fetchExchangeRate()
+            
+            self.exchangeRateLabel.text = "1 USDc = \(self.viewModel.state.exchangeRate?.ask.formatted() ?? "--") \(self.viewModel.state.toCurrency.name)"
+        }
+        
+        viewModel.onError = { [weak self] in
+            let alert = UIAlertController(
+                title: "Ошибка",
+                message: "Не удалось загрузить текущий курс",
+                preferredStyle: .alert
+            )
+            
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            self?.present(alert, animated: true)
+        }
     }
         
     private func setupLayout() {
         view.backgroundColor = UIColor(named: "Background")
-        exchangeRateLabel.text = "1 USDc = \(viewModel.state.exchangeRate?.ask.formatted() ?? "--") \(viewModel.state.toCurrency.name)"
         let calcTitle = TextFactory(
             text: "Exchange calculator",
             color: .text,
