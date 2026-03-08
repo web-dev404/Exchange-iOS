@@ -49,14 +49,9 @@ final class CurrencyCardView: UIView {
         chevron.tintColor = .black
         return chevron
     }()
-    
+        
     override init(frame: CGRect) {
         super.init(frame: frame)
-        
-        self.translatesAutoresizingMaskIntoConstraints = false
-        self.backgroundColor = .white
-        self.layer.cornerRadius = 16
-        self.heightAnchor.constraint(equalToConstant: 66).isActive = true
         setupLayout()
     }
     
@@ -74,6 +69,11 @@ final class CurrencyCardView: UIView {
     }
     
     private func setupLayout() {
+        self.translatesAutoresizingMaskIntoConstraints = false
+        self.backgroundColor = .white
+        self.layer.cornerRadius = 16
+        self.heightAnchor.constraint(equalToConstant: 66).isActive = true
+        
         addSubview(currencyTextField)
         addSubview(leftStackView)
         leftStackView.addArrangedSubview(currencyIcon)
@@ -82,6 +82,8 @@ final class CurrencyCardView: UIView {
         
         leftStackView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(selectTapped)))
         leftStackView.isUserInteractionEnabled = true
+        
+        currencyTextField.delegate = self
                 
         NSLayoutConstraint.activate([
             leftStackView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),
@@ -92,9 +94,26 @@ final class CurrencyCardView: UIView {
         ])
     }
     
+    // Отправляем знак родителю, что нажали на открытие bottom sheet
     @objc private func selectTapped() {
         onSelectTapped?()
     }
     
     var onSelectTapped: (() -> Void)?
+    
+    // Отправляем то, что ввели в инпут родителю
+    var onAmountChanged: ((String) -> Void)?
+    
+    // Обновить значение инпута
+    func updateAmount(_ amount: String) {
+        currencyTextField.text = amount
+    }
+}
+
+extension CurrencyCardView: UITextFieldDelegate {
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        let newText = (textField.text as NSString?)?.replacingCharacters(in: range, with: string) ?? string
+        onAmountChanged?(newText)
+        return true
+    }
 }

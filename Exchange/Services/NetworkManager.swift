@@ -18,7 +18,7 @@ final class NetworkManager {
         
     private init() {}
     
-    func fetchExchangeRate<T: Decodable>(_ type: T.Type, from url: URL) async throws -> T {
+    func fetch<T: Decodable>(_ type: T.Type, from url: URL) async throws -> T {
         let (data, _) = try await URLSession.shared.data(from: url)
         
         do {
@@ -28,6 +28,7 @@ final class NetworkManager {
         }
     }
     
+    // Фетчинг моковых данных из файла
     func fetchMockExchangeRate() throws -> [ExchangeRate] {
         guard let path = Bundle.main.path(forResource: "mock_exchange_rate", ofType: "json") else {
             throw NetworkError.noData

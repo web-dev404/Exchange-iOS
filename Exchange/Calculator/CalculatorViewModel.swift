@@ -13,21 +13,42 @@ struct CalculatorViewState {
     var fromAmount: Double
     var toAmount: Double
     var exchangeRate: ExchangeRate?
+    var activeField: ActiveField
 }
 
 protocol CalculatorViewModelProtocol {
     var state: CalculatorViewState { get set }
     func fetchExchangeRate() async
+    func updateAmount(_ amount: String, for field: ActiveField)
     var onError: (() -> Void)? { get set }
+    var onStateChanged: (() -> Void)? { get set }
 }
 
 final class CalculatorViewModel: CalculatorViewModelProtocol {
     var state: CalculatorViewState
-    private let api = "https://api.dolarapp.dev/v1/tickers?currencies=ARS"
-    
     var onError: (() -> Void)?
+    var onStateChanged: (() -> Void)?
     
+    // Обновляем значение стейтов которые отвечают за textfield, устанавливаем активный textfield и отправляем сигнал об изменении
+    func updateAmount(_ amount: String, for field: ActiveField) {
+        switch field {
+        case .from:
+            self.state.fromAmount = Double(amount) ?? 0
+            self.state.toAmount = (Double(amount) ?? 0) * (self.state.exchangeRate?.ask ?? 0)
+            self.state.activeField = .from
+            onStateChanged?()
+        case .to:
+            self.state.toAmount = Double(amount) ?? 0
+            self.state.fromAmount = (Double(amount) ?? 0) / (self.state.exchangeRate?.bid ?? 0)
+            self.state.activeField = .to
+            onStateChanged?()
+        }
+    }
+    
+    // Получить курс текущей валюты
     func fetchExchangeRate() async {
+        let api = "https://api.dolarapp.dev/v1/tickers?currencies=\(state.toCurrency.name)"
+        
         guard state.exchangeRate == nil else {
             return
         }
@@ -38,16 +59,25 @@ final class CalculatorViewModel: CalculatorViewModelProtocol {
         }
         
         do {
-            self.state.exchangeRate = try await NetworkManager.shared.fetchExchangeRate([ExchangeRate].self, from: url)[0]
+            self.state.exchangeRate = try await NetworkManager.shared.fetch([ExchangeRate].self, from: url)[0]
         } catch {
             onError?()
-            self.state.exchangeRate = (try? NetworkManager.shared.fetchMockExchangeRate())?[0] ?? ExchangeRate(ask: 1454.5, bid: 1455.5, book: "usdc_ars", date: "2026-07-03")
+            self.state.exchangeRate = (
+                try? NetworkManager.shared.fetchMockExchangeRate()
+            )?[0] ?? ExchangeRate(ask: 1454.5, bid: 1455.5, book: "usdc_ars", date: "2026-07-03")
         }
     }
     
     init() {
         let currencies = DataStore.shared.currencies
         
-        self.state = CalculatorViewState(fromCurrency: Currency(name: "USDc", icon: "us"), toCurrency: currencies[0], fromAmount: 0, toAmount: 0, exchangeRate: nil)
+        self.state = CalculatorViewState(
+            fromCurrency: Currency(name: "USDc", icon: "us"),
+            toCurrency: currencies[0],
+            fromAmount: 0,
+            toAmount: 0,
+            exchangeRate: nil,
+            activeField: .from
+        )
     }
 }

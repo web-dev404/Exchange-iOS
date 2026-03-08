@@ -7,9 +7,12 @@
 
 import UIKit
 
-final class CalculatorViewController: UIViewController {
-    private let exchangeRateLabel = TextFactory(text: "--", color: .contentBrand, fontWeight: .semibold, fontSize: 16).createText()
+enum ActiveField {
+    case from
+    case to
+}
 
+final class CalculatorViewController: UIViewController {
     private lazy var textStack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical
@@ -31,6 +34,8 @@ final class CalculatorViewController: UIViewController {
         return button
     }()
     
+    private let exchangeRateLabel = TextFactory(text: "--", color: .contentBrand, fontWeight: .semibold, fontSize: 16).createText()
+    
     private let fromCardView = CurrencyCardView()
     private let toCardView = CurrencyCardView()
     
@@ -38,31 +43,50 @@ final class CalculatorViewController: UIViewController {
         
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         setupLayout()
         
+        // Устанавливаем изначальные значения для карточек с инпутами
         fromCardView.viewModel = CurrencyCardViewModel(
             currency: viewModel.state.fromCurrency,
             amount: viewModel.state.fromAmount.formatted(),
             isChangeable: false
         )
-        
         toCardView.viewModel = CurrencyCardViewModel(
             currency: viewModel.state.toCurrency,
             amount: viewModel.state.toAmount.formatted(),
             isChangeable: true
         )
         
+        // Ловим тап по кнопке которая открывает bottom sheet
         toCardView.onSelectTapped = { [weak self] in
             self?.openBottomSheet()
         }
+
+        // Ловим обновление инпута из карточки с инпутом и апдейтим значение противоположного
+        fromCardView.onAmountChanged = { [weak self] amount in
+            self?.viewModel.updateAmount(amount, for: .from)
+        }
+        toCardView.onAmountChanged = { [weak self] amount in
+            self?.viewModel.updateAmount(amount, for: .to)
+        }
         
+        // Ловим обновление стейта из вью модельки и апдейтим значение противоположного инпута
+        viewModel.onStateChanged = { [weak self] in
+            switch self?.viewModel.state.activeField {
+            case .from:
+                self?.toCardView.updateAmount(self?.viewModel.state.toAmount.formatted() ?? "0")
+            default:
+                self?.fromCardView.updateAmount(self?.viewModel.state.fromAmount.formatted() ?? "0")
+            }
+        }
+        
+        // Фетчим курс валют
         Task {
             await viewModel.fetchExchangeRate()
-            
             self.exchangeRateLabel.text = "1 USDc = \(self.viewModel.state.exchangeRate?.ask.formatted() ?? "--") \(self.viewModel.state.toCurrency.name)"
         }
         
+        // Показываем alert с ошибкой юзеру
         viewModel.onError = { [weak self] in
             let alert = UIAlertController(
                 title: "Ошибка",
@@ -74,7 +98,7 @@ final class CalculatorViewController: UIViewController {
             self?.present(alert, animated: true)
         }
     }
-        
+    
     private func setupLayout() {
         view.backgroundColor = UIColor(named: "Background")
         let calcTitle = TextFactory(
@@ -90,7 +114,7 @@ final class CalculatorViewController: UIViewController {
         view.addSubview(swapButton)
         textStack.addArrangedSubview(calcTitle)
         textStack.addArrangedSubview(exchangeRateLabel)
-                
+        
         NSLayoutConstraint.activate([
             textStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 50),
             textStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
@@ -108,6 +132,7 @@ final class CalculatorViewController: UIViewController {
         ])
     }
     
+//    Функция чтобы открыть шторку с валютами
     private func openBottomSheet() {
         let pickerVC = CurrencyPickerViewController()
         
@@ -116,7 +141,7 @@ final class CalculatorViewController: UIViewController {
             sheet.prefersGrabberVisible = true
             sheet.preferredCornerRadius = 32
         }
-        
+                
         present(pickerVC, animated: true)
     }
 }
