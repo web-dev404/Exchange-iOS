@@ -10,7 +10,7 @@ import Foundation
 protocol CurrencyCellViewModelProtocol {
     var currencyName: String { get }
     var currencyIcon: String { get }
-    var isSelected: Bool { get }
+    var isSelected: Bool { get set }
     
     init(currency: Currency, isSelected: Bool)
 }

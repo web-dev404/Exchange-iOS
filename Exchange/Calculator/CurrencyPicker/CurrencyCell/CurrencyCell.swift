@@ -53,11 +53,7 @@ final class CurrencyCell: UITableViewCell {
         didSet {
             currencyLabel.text = viewModel.currencyName
             currencyIconView.image = UIImage(named: viewModel.currencyIcon)
-            
-            if viewModel.isSelected {
-                currencyRadio.image = UIImage(systemName: "checkmark.circle.fill")
-                currencyRadio.tintColor = .contentBrand
-            }
+            setSelected(viewModel.isSelected)
         }
     }
     
@@ -77,5 +73,15 @@ final class CurrencyCell: UITableViewCell {
             currencyLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             currencyRadio.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
         ])
+    }
+    
+    func setSelected(_ selected: Bool) {
+        if selected {
+            currencyRadio.image = UIImage(systemName: "checkmark.circle.fill")
+            currencyRadio.tintColor = .contentBrand
+        } else {
+            currencyRadio.image = nil
+            currencyRadio.layer.borderWidth = 2
+        }
     }
 }

@@ -12,6 +12,10 @@ enum ActiveField {
     case to
 }
 
+protocol CurrencyPickerDelegate: AnyObject {
+    func didSelectCurrency(_ currency: Currency)
+}
+
 final class CalculatorViewController: UIViewController {
     private lazy var textStack: UIStackView = {
         let stack = UIStackView()
@@ -31,6 +35,10 @@ final class CalculatorViewController: UIViewController {
         button.widthAnchor.constraint(equalToConstant: 24).isActive = true
         button.heightAnchor.constraint(equalToConstant: 24).isActive = true
         button.layer.cornerRadius = 12
+        
+        button.addAction(UIAction {[weak self] _ in
+            
+        }, for: .touchUpInside)
         return button
     }()
     
@@ -40,22 +48,11 @@ final class CalculatorViewController: UIViewController {
     private let toCardView = CurrencyCardView()
     
     private var viewModel: CalculatorViewModelProtocol = CalculatorViewModel()
-        
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupLayout()
-        
-        // Устанавливаем изначальные значения для карточек с инпутами
-        fromCardView.viewModel = CurrencyCardViewModel(
-            currency: viewModel.state.fromCurrency,
-            amount: viewModel.state.fromAmount.formatted(),
-            isChangeable: false
-        )
-        toCardView.viewModel = CurrencyCardViewModel(
-            currency: viewModel.state.toCurrency,
-            amount: viewModel.state.toAmount.formatted(),
-            isChangeable: true
-        )
+        updateCard()
         
         // Ловим тап по кнопке которая открывает bottom sheet
         toCardView.onSelectTapped = { [weak self] in
@@ -78,12 +75,6 @@ final class CalculatorViewController: UIViewController {
             default:
                 self?.fromCardView.updateAmount(self?.viewModel.state.fromAmount.formatted() ?? "0")
             }
-        }
-        
-        // Фетчим курс валют
-        Task {
-            await viewModel.fetchExchangeRate()
-            self.exchangeRateLabel.text = "1 USDc = \(self.viewModel.state.exchangeRate?.ask.formatted() ?? "--") \(self.viewModel.state.toCurrency.name)"
         }
         
         // Показываем alert с ошибкой юзеру
@@ -132,16 +123,41 @@ final class CalculatorViewController: UIViewController {
         ])
     }
     
-//    Функция чтобы открыть шторку с валютами
+    // Функция чтобы открыть шторку с валютами
     private func openBottomSheet() {
-        let pickerVC = CurrencyPickerViewController()
+        let pickerVC = CurrencyPickerViewController(activeCurrencyIndex: viewModel.currentToCurrencyIndex())
+        pickerVC.delegate = self
         
         if let sheet = pickerVC.sheetPresentationController {
             sheet.detents = [.medium()]
             sheet.prefersGrabberVisible = true
             sheet.preferredCornerRadius = 32
         }
-                
+        
         present(pickerVC, animated: true)
+    }
+    
+    private func updateCard() {
+        // Устанавливаем изначальные значения для карточек с инпутами
+        fromCardView.viewModel = CurrencyCardViewModel(
+            currency: viewModel.state.fromCurrency,
+        )
+        toCardView.viewModel = CurrencyCardViewModel(
+            currency: viewModel.state.toCurrency,
+            isChangeable: true
+        )
+        
+        // Фетчим курс валют и устанавливаем его в тексте
+        Task {
+            await viewModel.fetchExchangeRate()
+            self.exchangeRateLabel.text = "1 USDc = \(self.viewModel.state.exchangeRate?.ask.formatted() ?? "--") \(self.viewModel.state.toCurrency.name)"
+        }
+    }
+}
+
+extension CalculatorViewController: CurrencyPickerDelegate {
+    func didSelectCurrency(_ currency: Currency) {
+        viewModel.state.toCurrency = currency
+        updateCard()
     }
 }

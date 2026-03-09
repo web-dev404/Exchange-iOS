@@ -22,14 +22,28 @@ final class CurrencyPickerViewController: UIViewController {
     private lazy var closeButton: UIButton = {
         let button = UIButton()
         let config = UIImage.SymbolConfiguration(pointSize: 24, weight: .regular) // adjust pointSize
-        button.setImage(UIImage(systemName: "xmark.circle", withConfiguration: config), for: .normal, )
+        button.setImage(UIImage(systemName: "xmark.circle", withConfiguration: config), for: .normal)
         button.tintColor = .text
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.addAction(UIAction {[weak self] _ in
+            self?.dismiss(animated: true)
+        }, for: .touchUpInside)
         return button
     }()
     
+    weak var delegate: CurrencyPickerDelegate?
     private let viewModel: CurrencyPickerViewModelProtocol = CurrencyPickerViewModel()
-        
+    private var activeCurrencyIndex: Int
+    
+    init(activeCurrencyIndex: Int) {
+        self.activeCurrencyIndex = activeCurrencyIndex
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupLayout()
@@ -69,13 +83,14 @@ extension CurrencyPickerViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "currencyCell", for: indexPath)
         guard let cell = cell as? CurrencyCell else { return UITableViewCell() }
-        cell.viewModel = viewModel.getCurrencyCellViewModel(at: indexPath.row)
+        cell.viewModel = viewModel.getCurrencyCellViewModel(at: indexPath.row, activeIndex: activeCurrencyIndex)
         return cell
     }
 }
 
 extension CurrencyPickerViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print(indexPath.row)
+        delegate?.didSelectCurrency(viewModel.getCurrency(by: indexPath.row))
+        dismiss(animated: true)
     }
 }

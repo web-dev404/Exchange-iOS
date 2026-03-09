@@ -22,12 +22,20 @@ protocol CalculatorViewModelProtocol {
     func updateAmount(_ amount: String, for field: ActiveField)
     var onError: (() -> Void)? { get set }
     var onStateChanged: (() -> Void)? { get set }
+    func currentToCurrencyIndex() -> Int
 }
 
 final class CalculatorViewModel: CalculatorViewModelProtocol {
     var state: CalculatorViewState
     var onError: (() -> Void)?
     var onStateChanged: (() -> Void)?
+    
+    // Получить индекс активного cell
+    func currentToCurrencyIndex() -> Int {
+        let currencies = DataStore.shared.currencies
+        
+        return currencies.firstIndex {$0.name == state.toCurrency.name && $0.icon == state.toCurrency.icon} ?? 0
+    }
     
     // Обновляем значение стейтов которые отвечают за textfield, устанавливаем активный textfield и отправляем сигнал об изменении
     func updateAmount(_ amount: String, for field: ActiveField) {
@@ -47,12 +55,7 @@ final class CalculatorViewModel: CalculatorViewModelProtocol {
     
     // Получить курс текущей валюты
     func fetchExchangeRate() async {
-        let api = "https://api.dolarapp.dev/v1/tickers?currencies=\(state.toCurrency.name)"
-        
-        guard state.exchangeRate == nil else {
-            return
-        }
-        
+        let api = "https://api.dolarapp.dev/v1/tickers?currencies=\(state.toCurrency.name.uppercased())"
         guard let url = URL(string: api) else {
             print("Invalid URL")
             return

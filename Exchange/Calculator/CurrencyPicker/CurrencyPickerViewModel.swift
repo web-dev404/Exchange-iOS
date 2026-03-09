@@ -9,8 +9,9 @@ import Foundation
 
 protocol CurrencyPickerViewModelProtocol {
     func numberOfRows() -> Int
-    func getCurrencyCellViewModel(at indexPath: Int) -> CurrencyCellViewModelProtocol
+    func getCurrencyCellViewModel(at indexPath: Int, activeIndex: Int) -> CurrencyCellViewModelProtocol
     func getCurrencies(completion: @escaping() -> Void)
+    func getCurrency(by indexPath: Int) -> Currency
 }
 
 final class CurrencyPickerViewModel: CurrencyPickerViewModelProtocol {
@@ -20,12 +21,16 @@ final class CurrencyPickerViewModel: CurrencyPickerViewModelProtocol {
         currencies.count
     }
     
-    func getCurrencyCellViewModel(at indexPath: Int) -> any CurrencyCellViewModelProtocol {
-        CurrencyCellViewModel(currency: currencies[indexPath], isSelected: true)
+    func getCurrencyCellViewModel(at indexPath: Int, activeIndex: Int) -> any CurrencyCellViewModelProtocol {
+        CurrencyCellViewModel(currency: currencies[indexPath], isSelected: indexPath == activeIndex ? true : false)
     }
     
     func getCurrencies(completion: @escaping () -> Void) {
         currencies = DataStore.shared.currencies
         completion()
+    }
+    
+    func getCurrency(by indexPath: Int) -> Currency {
+        currencies[indexPath]
     }
 }
