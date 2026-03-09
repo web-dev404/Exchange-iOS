@@ -55,9 +55,7 @@ final class CurrencyCardView: UIView {
         setupLayout()
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     
     var viewModel: CurrencyCardViewModelProtocol! {
         didSet {
@@ -95,10 +93,7 @@ final class CurrencyCardView: UIView {
     }
     
     // Отправляем знак родителю, что нажали на открытие bottom sheet
-    @objc private func selectTapped() {
-        onSelectTapped?()
-    }
-    
+    @objc private func selectTapped() { onSelectTapped?() }
     var onSelectTapped: (() -> Void)?
     
     // Отправляем то, что ввели в инпут родителю

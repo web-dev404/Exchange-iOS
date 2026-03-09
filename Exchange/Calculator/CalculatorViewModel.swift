@@ -23,6 +23,7 @@ protocol CalculatorViewModelProtocol {
     var onError: (() -> Void)? { get set }
     var onStateChanged: (() -> Void)? { get set }
     func currentToCurrencyIndex() -> Int
+    func swapCards()
 }
 
 final class CalculatorViewModel: CalculatorViewModelProtocol {
@@ -33,7 +34,6 @@ final class CalculatorViewModel: CalculatorViewModelProtocol {
     // Получить индекс активного cell
     func currentToCurrencyIndex() -> Int {
         let currencies = DataStore.shared.currencies
-        
         return currencies.firstIndex {$0.name == state.toCurrency.name && $0.icon == state.toCurrency.icon} ?? 0
     }
     
@@ -51,6 +51,10 @@ final class CalculatorViewModel: CalculatorViewModelProtocol {
             self.state.activeField = .to
             onStateChanged?()
         }
+    }
+    
+    func swapCards() {
+        
     }
     
     // Получить курс текущей валюты

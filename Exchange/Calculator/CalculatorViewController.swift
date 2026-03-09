@@ -37,7 +37,7 @@ final class CalculatorViewController: UIViewController {
         button.layer.cornerRadius = 12
         
         button.addAction(UIAction {[weak self] _ in
-            
+            self?.viewModel.swapCards()
         }, for: .touchUpInside)
         return button
     }()
