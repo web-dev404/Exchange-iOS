@@ -49,6 +49,8 @@ final class CurrencyCardView: UIView {
         chevron.tintColor = .black
         return chevron
     }()
+    
+    private var tapGesture: UITapGestureRecognizer?
         
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -63,6 +65,19 @@ final class CurrencyCardView: UIView {
             currencyLabel.text = viewModel.currencyName
             currencyTextField.text = viewModel.amount
             chevronDown.isHidden = !viewModel.isChangeable
+            
+            if viewModel.isChangeable {
+                let gesture = UITapGestureRecognizer(target: self, action: #selector(selectTapped))
+                leftStackView.addGestureRecognizer(gesture)
+                leftStackView.isUserInteractionEnabled = true
+                tapGesture = gesture
+            } else {
+                if let gesture = tapGesture {
+                    leftStackView.removeGestureRecognizer(gesture)
+                    tapGesture = nil
+                }
+                leftStackView.isUserInteractionEnabled = false
+            }
         }
     }
     
@@ -77,9 +92,6 @@ final class CurrencyCardView: UIView {
         leftStackView.addArrangedSubview(currencyIcon)
         leftStackView.addArrangedSubview(currencyLabel)
         leftStackView.addArrangedSubview(chevronDown)
-        
-        leftStackView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(selectTapped)))
-        leftStackView.isUserInteractionEnabled = true
         
         currencyTextField.delegate = self
                 

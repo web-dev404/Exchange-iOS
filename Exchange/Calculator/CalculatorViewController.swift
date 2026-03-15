@@ -12,6 +12,11 @@ enum ActiveField {
     case to
 }
 
+enum ActiveCard {
+    case from
+    case to
+}
+
 protocol CurrencyPickerDelegate: AnyObject {
     func didSelectCurrency(_ currency: Currency)
 }
@@ -35,27 +40,36 @@ final class CalculatorViewController: UIViewController {
         button.widthAnchor.constraint(equalToConstant: 24).isActive = true
         button.heightAnchor.constraint(equalToConstant: 24).isActive = true
         button.layer.cornerRadius = 12
-        
         button.addAction(UIAction {[weak self] _ in
             self?.viewModel.swapCards()
         }, for: .touchUpInside)
         return button
     }()
     
+    private var viewModel: CalculatorViewModelProtocol = CalculatorViewModel()
     private let exchangeRateLabel = TextFactory(text: "--", color: .contentBrand, fontWeight: .semibold, fontSize: 16).createText()
     
     private let fromCardView = CurrencyCardView()
     private let toCardView = CurrencyCardView()
-    
-    private var viewModel: CalculatorViewModelProtocol = CalculatorViewModel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupLayout()
         updateCard()
         
+        // Фетчим курс валют и устанавливаем его в тексте
+        Task {
+            await viewModel.fetchExchangeRate()
+            updateText()
+        }
+        
         // Ловим тап по кнопке которая открывает bottom sheet
+        fromCardView.onSelectTapped = { [weak self] in
+            self?.viewModel.state.activeCard = .from
+            self?.openBottomSheet()
+        }
         toCardView.onSelectTapped = { [weak self] in
+            self?.viewModel.state.activeCard = .to
             self?.openBottomSheet()
         }
 
@@ -71,10 +85,14 @@ final class CalculatorViewController: UIViewController {
         viewModel.onStateChanged = { [weak self] in
             switch self?.viewModel.state.activeField {
             case .from:
-                self?.toCardView.updateAmount(self?.viewModel.state.toAmount.formatted() ?? "0")
+                self?.toCardView.updateAmount(String(self?.viewModel.state.toAmount ?? 0))
             default:
-                self?.fromCardView.updateAmount(self?.viewModel.state.fromAmount.formatted() ?? "0")
+                self?.fromCardView.updateAmount(String(self?.viewModel.state.fromAmount ?? 0))
             }
+        }
+        
+        viewModel.onSwapTapped = { [unowned self] in
+            updateCard()
         }
         
         // Показываем alert с ошибкой юзеру
@@ -137,27 +155,50 @@ final class CalculatorViewController: UIViewController {
         present(pickerVC, animated: true)
     }
     
+    // Обновляем значения для карточек с инпутами
     private func updateCard() {
-        // Устанавливаем изначальные значения для карточек с инпутами
         fromCardView.viewModel = CurrencyCardViewModel(
             currency: viewModel.state.fromCurrency,
+            amount: String(self.viewModel.state.fromAmount),
+            isChangeable: self.viewModel.state.fromCurrency.name != "USDc"
         )
         toCardView.viewModel = CurrencyCardViewModel(
             currency: viewModel.state.toCurrency,
-            isChangeable: true
+            amount: String(self.viewModel.state.toAmount),
+            isChangeable: self.viewModel.state.toCurrency.name != "USDc"
         )
         
-        // Фетчим курс валют и устанавливаем его в тексте
-        Task {
-            await viewModel.fetchExchangeRate()
-            self.exchangeRateLabel.text = "1 USDc = \(self.viewModel.state.exchangeRate?.ask.formatted() ?? "--") \(self.viewModel.state.toCurrency.name)"
-        }
+        updateText()
+    }
+    
+    private func updateText() {
+        let calculation = self.viewModel.state.toCurrency.name != "USDc" ? self.viewModel.state.exchangeRate?.ask.formatted() ?? "--" : (1 / (self.viewModel.state.exchangeRate?.ask ?? 0)).formatted()
+        
+        self.exchangeRateLabel.text = "1 \(self.viewModel.state.fromCurrency.name) = \(calculation) \(self.viewModel.state.toCurrency.name)"
     }
 }
 
 extension CalculatorViewController: CurrencyPickerDelegate {
     func didSelectCurrency(_ currency: Currency) {
-        viewModel.state.toCurrency = currency
-        updateCard()
+        if viewModel.state.activeCard == .from {
+            viewModel.state.fromCurrency = currency
+        } else {
+            viewModel.state.toCurrency = currency
+        }
+        
+        // Фетчим курс валют и устанавливаем его в тексте
+        Task {
+            await viewModel.fetchExchangeRate()
+            
+            switch viewModel.state.activeField {
+            case .from:
+                viewModel.updateAmount(String(viewModel.state.fromAmount), for: .from)
+            default:
+                viewModel.updateAmount(String(viewModel.state.toAmount), for: .to)
+            }
+            
+            updateText()
+            updateCard()
+        }
     }
 }

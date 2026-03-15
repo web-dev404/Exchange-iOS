@@ -14,6 +14,7 @@ struct CalculatorViewState {
     var toAmount: Double
     var exchangeRate: ExchangeRate?
     var activeField: ActiveField
+    var activeCard: ActiveCard
 }
 
 protocol CalculatorViewModelProtocol {
@@ -24,17 +25,23 @@ protocol CalculatorViewModelProtocol {
     var onStateChanged: (() -> Void)? { get set }
     func currentToCurrencyIndex() -> Int
     func swapCards()
+    var onSwapTapped: (() -> Void)? { get set }
 }
 
 final class CalculatorViewModel: CalculatorViewModelProtocol {
     var state: CalculatorViewState
     var onError: (() -> Void)?
     var onStateChanged: (() -> Void)?
+    var onSwapTapped: (() -> Void)?
     
     // Получить индекс активного cell
     func currentToCurrencyIndex() -> Int {
         let currencies = DataStore.shared.currencies
-        return currencies.firstIndex {$0.name == state.toCurrency.name && $0.icon == state.toCurrency.icon} ?? 0
+        if state.activeCard == .from {
+            return currencies.firstIndex {$0.name == state.fromCurrency.name && $0.icon == state.fromCurrency.icon} ?? 0
+        } else {
+            return currencies.firstIndex {$0.name == state.toCurrency.name && $0.icon == state.toCurrency.icon} ?? 0
+        }
     }
     
     // Обновляем значение стейтов которые отвечают за textfield, устанавливаем активный textfield и отправляем сигнал об изменении
@@ -42,24 +49,44 @@ final class CalculatorViewModel: CalculatorViewModelProtocol {
         switch field {
         case .from:
             self.state.fromAmount = Double(amount) ?? 0
-            self.state.toAmount = (Double(amount) ?? 0) * (self.state.exchangeRate?.ask ?? 0)
+            
+            if state.fromCurrency.name == "USDc" {
+                self.state.toAmount = (Double(amount) ?? 0) * (self.state.exchangeRate?.ask ?? 0)
+            } else {
+                self.state.toAmount = (Double(amount) ?? 0) / (self.state.exchangeRate?.bid ?? 0)
+            }
+            
             self.state.activeField = .from
             onStateChanged?()
         case .to:
             self.state.toAmount = Double(amount) ?? 0
-            self.state.fromAmount = (Double(amount) ?? 0) / (self.state.exchangeRate?.bid ?? 0)
+            
+            if state.toCurrency.name == "USDc" {
+                self.state.fromAmount = (Double(amount) ?? 0) * (self.state.exchangeRate?.ask ?? 0)
+            } else {
+                self.state.fromAmount = (Double(amount) ?? 0) / (self.state.exchangeRate?.bid ?? 0)
+            }
+            
             self.state.activeField = .to
             onStateChanged?()
         }
     }
     
     func swapCards() {
+        let tempCurrency = state.fromCurrency
+        state.fromCurrency = state.toCurrency
+        state.toCurrency = tempCurrency
         
+        let tempAmount = state.fromAmount
+        state.fromAmount = state.toAmount
+        state.toAmount = tempAmount
+        
+        onSwapTapped?()
     }
     
     // Получить курс текущей валюты
     func fetchExchangeRate() async {
-        let api = "https://api.dolarapp.dev/v1/tickers?currencies=\(state.toCurrency.name.uppercased())"
+        let api = "https://api.dolarapp.dev/v1/tickers?currencies=\(state.fromCurrency.name != "USDc" ? state.fromCurrency.name.uppercased() : state.toCurrency.name.uppercased())"
         guard let url = URL(string: api) else {
             print("Invalid URL")
             return
@@ -84,7 +111,8 @@ final class CalculatorViewModel: CalculatorViewModelProtocol {
             fromAmount: 0,
             toAmount: 0,
             exchangeRate: nil,
-            activeField: .from
+            activeField: .from,
+            activeCard: .to
         )
     }
 }
