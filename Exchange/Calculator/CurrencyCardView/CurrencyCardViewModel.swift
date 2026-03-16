@@ -29,7 +29,7 @@ final class CurrencyCardViewModel: CurrencyCardViewModelProtocol {
     
     var isChangeable: Bool
     
-    init(currency: Currency, amount: String = "0", isChangeable: Bool = false) {
+    init(currency: Currency, amount: String = "", isChangeable: Bool = false) {
         self.currency = currency
         self.amount = amount
         self.isChangeable = isChangeable

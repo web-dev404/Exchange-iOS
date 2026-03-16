@@ -39,6 +39,7 @@ final class CurrencyCardView: UIView {
         textField.textAlignment = .right
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.font = .systemFont(ofSize: 16, weight: .bold)
+        textField.placeholder = "0"
         return textField
     }()
     

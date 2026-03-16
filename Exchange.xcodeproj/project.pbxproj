@@ -6,8 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		1AD580F42F67270F00F67539 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1AC64D502F50D68E00D82B5E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1AC64D572F50D68E00D82B5E;
+			remoteInfo = Exchange;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		1AC64D582F50D68E00D82B5E /* Exchange.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Exchange.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1AD580F02F67270F00F67539 /* ExchangeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ExchangeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -29,10 +40,22 @@
 			path = Exchange;
 			sourceTree = "<group>";
 		};
+		1AD580F12F67270F00F67539 /* ExchangeTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ExchangeTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		1AC64D552F50D68E00D82B5E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1AD580ED2F67270F00F67539 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -46,6 +69,7 @@
 			isa = PBXGroup;
 			children = (
 				1AC64D5A2F50D68E00D82B5E /* Exchange */,
+				1AD580F12F67270F00F67539 /* ExchangeTests */,
 				1AC64D592F50D68E00D82B5E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -54,6 +78,7 @@
 			isa = PBXGroup;
 			children = (
 				1AC64D582F50D68E00D82B5E /* Exchange.app */,
+				1AD580F02F67270F00F67539 /* ExchangeTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -83,6 +108,29 @@
 			productReference = 1AC64D582F50D68E00D82B5E /* Exchange.app */;
 			productType = "com.apple.product-type.application";
 		};
+		1AD580EF2F67270F00F67539 /* ExchangeTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1AD580F82F67270F00F67539 /* Build configuration list for PBXNativeTarget "ExchangeTests" */;
+			buildPhases = (
+				1AD580EC2F67270F00F67539 /* Sources */,
+				1AD580ED2F67270F00F67539 /* Frameworks */,
+				1AD580EE2F67270F00F67539 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1AD580F52F67270F00F67539 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				1AD580F12F67270F00F67539 /* ExchangeTests */,
+			);
+			name = ExchangeTests;
+			packageProductDependencies = (
+			);
+			productName = ExchangeTests;
+			productReference = 1AD580F02F67270F00F67539 /* ExchangeTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -90,11 +138,15 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2620;
+				LastSwiftUpdateCheck = 2630;
 				LastUpgradeCheck = 2630;
 				TargetAttributes = {
 					1AC64D572F50D68E00D82B5E = {
 						CreatedOnToolsVersion = 26.2;
+					};
+					1AD580EF2F67270F00F67539 = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = 1AC64D572F50D68E00D82B5E;
 					};
 				};
 			};
@@ -113,12 +165,20 @@
 			projectRoot = "";
 			targets = (
 				1AC64D572F50D68E00D82B5E /* Exchange */,
+				1AD580EF2F67270F00F67539 /* ExchangeTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		1AC64D562F50D68E00D82B5E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1AD580EE2F67270F00F67539 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -135,7 +195,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		1AD580EC2F67270F00F67539 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1AD580F52F67270F00F67539 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1AC64D572F50D68E00D82B5E /* Exchange */;
+			targetProxy = 1AD580F42F67270F00F67539 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1AC64D6C2F50D68F00D82B5E /* Debug */ = {
@@ -333,6 +408,48 @@
 			};
 			name = Release;
 		};
+		1AD580F62F67270F00F67539 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5M355YVDZW;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = imrondev.ExchangeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Exchange.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Exchange";
+			};
+			name = Debug;
+		};
+		1AD580F72F67270F00F67539 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5M355YVDZW;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = imrondev.ExchangeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Exchange.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Exchange";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -350,6 +467,15 @@
 			buildConfigurations = (
 				1AC64D6C2F50D68F00D82B5E /* Debug */,
 				1AC64D6D2F50D68F00D82B5E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1AD580F82F67270F00F67539 /* Build configuration list for PBXNativeTarget "ExchangeTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1AD580F62F67270F00F67539 /* Debug */,
+				1AD580F72F67270F00F67539 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

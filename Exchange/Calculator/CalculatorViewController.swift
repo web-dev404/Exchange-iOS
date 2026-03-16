@@ -46,6 +46,14 @@ final class CalculatorViewController: UIViewController {
         return button
     }()
     
+    private lazy var activityIndicator: UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView()
+        indicator.translatesAutoresizingMaskIntoConstraints = false
+        indicator.startAnimating()
+        indicator.hidesWhenStopped = true
+        return indicator
+    }()
+    
     private var viewModel: CalculatorViewModelProtocol = CalculatorViewModel()
     private let exchangeRateLabel = TextFactory(text: "--", color: .contentBrand, fontWeight: .semibold, fontSize: 16).createText()
     
@@ -60,6 +68,7 @@ final class CalculatorViewController: UIViewController {
         // Фетчим курс валют и устанавливаем его в тексте
         Task {
             await viewModel.fetchExchangeRate()
+            activityIndicator.stopAnimating()
             updateText()
         }
         
@@ -85,9 +94,11 @@ final class CalculatorViewController: UIViewController {
         viewModel.onStateChanged = { [weak self] in
             switch self?.viewModel.state.activeField {
             case .from:
-                self?.toCardView.updateAmount(String(self?.viewModel.state.toAmount ?? 0))
+                let amount = self?.viewModel.state.toAmount ?? 0
+                self?.toCardView.updateAmount(amount == 0 ? "" : String(format: "%.2f", amount))
             default:
-                self?.fromCardView.updateAmount(String(self?.viewModel.state.fromAmount ?? 0))
+                let amount = self?.viewModel.state.fromAmount ?? 0
+                self?.fromCardView.updateAmount(amount == 0 ? "" : String(format: "%.2f", amount))
             }
         }
         
@@ -98,8 +109,8 @@ final class CalculatorViewController: UIViewController {
         // Показываем alert с ошибкой юзеру
         viewModel.onError = { [weak self] in
             let alert = UIAlertController(
-                title: "Ошибка",
-                message: "Не удалось загрузить текущий курс",
+                title: "Ошибка! Не удалось загрузить актуальный курс",
+                message: "Показываем последний сохранённый",
                 preferredStyle: .alert
             )
             
@@ -123,11 +134,14 @@ final class CalculatorViewController: UIViewController {
         view.addSubview(swapButton)
         textStack.addArrangedSubview(calcTitle)
         textStack.addArrangedSubview(exchangeRateLabel)
+        textStack.addArrangedSubview(activityIndicator)
         
         NSLayoutConstraint.activate([
             textStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 50),
             textStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             textStack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            
+            activityIndicator.topAnchor.constraint(equalTo: exchangeRateLabel.topAnchor, constant: 0),
             
             fromCardView.topAnchor.constraint(equalTo: textStack.bottomAnchor, constant: 24),
             fromCardView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
@@ -159,12 +173,12 @@ final class CalculatorViewController: UIViewController {
     private func updateCard() {
         fromCardView.viewModel = CurrencyCardViewModel(
             currency: viewModel.state.fromCurrency,
-            amount: String(self.viewModel.state.fromAmount),
+            amount: self.viewModel.state.fromAmount == 0 ? "" : String(format: "%.2f", self.viewModel.state.fromAmount),
             isChangeable: self.viewModel.state.fromCurrency.name != "USDc"
         )
         toCardView.viewModel = CurrencyCardViewModel(
             currency: viewModel.state.toCurrency,
-            amount: String(self.viewModel.state.toAmount),
+            amount: self.viewModel.state.toAmount == 0 ? "" : String(format: "%.2f", self.viewModel.state.toAmount),
             isChangeable: self.viewModel.state.toCurrency.name != "USDc"
         )
         
@@ -192,9 +206,9 @@ extension CalculatorViewController: CurrencyPickerDelegate {
             
             switch viewModel.state.activeField {
             case .from:
-                viewModel.updateAmount(String(viewModel.state.fromAmount), for: .from)
+                viewModel.updateAmount(String(format: "%.2f", viewModel.state.fromAmount), for: .from)
             default:
-                viewModel.updateAmount(String(viewModel.state.toAmount), for: .to)
+                viewModel.updateAmount(String(format: "%.2f", viewModel.state.toAmount), for: .to)
             }
             
             updateText()
