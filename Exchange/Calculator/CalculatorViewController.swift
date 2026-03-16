@@ -7,16 +7,6 @@
 
 import UIKit
 
-enum ActiveField {
-    case from
-    case to
-}
-
-enum ActiveCard {
-    case from
-    case to
-}
-
 protocol CurrencyPickerDelegate: AnyObject {
     func didSelectCurrency(_ currency: Currency)
 }
@@ -60,6 +50,7 @@ final class CalculatorViewController: UIViewController {
     private let fromCardView = CurrencyCardView()
     private let toCardView = CurrencyCardView()
     
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupLayout()
@@ -91,7 +82,7 @@ final class CalculatorViewController: UIViewController {
         }
         
         // Ловим обновление стейта из вью модельки и апдейтим значение противоположного инпута
-        viewModel.onStateChanged = { [weak self] in
+        viewModel.onAmountChanged = { [weak self] in
             switch self?.viewModel.state.activeField {
             case .from:
                 let amount = self?.viewModel.state.toAmount ?? 0
@@ -119,6 +110,7 @@ final class CalculatorViewController: UIViewController {
         }
     }
     
+    // MARK: - Private Methods
     private func setupLayout() {
         view.backgroundColor = UIColor(named: "Background")
         let calcTitle = TextFactory(
@@ -140,7 +132,6 @@ final class CalculatorViewController: UIViewController {
             textStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 50),
             textStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             textStack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            
             activityIndicator.topAnchor.constraint(equalTo: exchangeRateLabel.topAnchor, constant: 0),
             
             fromCardView.topAnchor.constraint(equalTo: textStack.bottomAnchor, constant: 24),
@@ -192,6 +183,7 @@ final class CalculatorViewController: UIViewController {
     }
 }
 
+// MARK: - CurrencyPickerDelegate
 extension CalculatorViewController: CurrencyPickerDelegate {
     func didSelectCurrency(_ currency: Currency) {
         if viewModel.state.activeCard == .from {

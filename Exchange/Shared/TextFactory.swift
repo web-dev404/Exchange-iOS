@@ -26,11 +26,10 @@ final class TextFactory: TextFactoryProtocol {
     
     func createText() -> UILabel {
         let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
         label.text = text
         label.textColor = color
         label.font = .systemFont(ofSize: fontSize, weight: fontWeight)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        
         return label
     }
 }

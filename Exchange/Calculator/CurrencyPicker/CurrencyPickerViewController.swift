@@ -73,6 +73,7 @@ final class CurrencyPickerViewController: UIViewController {
     }
 }
 
+// MARK: - UITableViewDataSource
 extension CurrencyPickerViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         viewModel.numberOfRows()
@@ -86,6 +87,7 @@ extension CurrencyPickerViewController: UITableViewDataSource {
     }
 }
 
+// MARK: - UITableViewDelegate
 extension CurrencyPickerViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         delegate?.didSelectCurrency(viewModel.getCurrency(by: indexPath.row))

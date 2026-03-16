@@ -10,10 +10,10 @@ import UIKit
 final class CurrencyCardView: UIView {
     private lazy var leftStackView: UIStackView = {
         let stackView = UIStackView()
+        stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .horizontal
         stackView.spacing = 8
         stackView.alignment = .center
-        stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
     }()
     
@@ -35,9 +35,9 @@ final class CurrencyCardView: UIView {
     
     private lazy var currencyTextField: UITextField = {
         let textField = UITextField()
+        textField.translatesAutoresizingMaskIntoConstraints = false
         textField.keyboardType = .decimalPad
         textField.textAlignment = .right
-        textField.translatesAutoresizingMaskIntoConstraints = false
         textField.font = .systemFont(ofSize: 16, weight: .bold)
         textField.placeholder = "0"
         return textField
@@ -118,6 +118,7 @@ final class CurrencyCardView: UIView {
     }
 }
 
+// MARK: - UITextFieldDelegate
 extension CurrencyCardView: UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         let newText = (textField.text as NSString?)?.replacingCharacters(in: range, with: string) ?? string

@@ -7,6 +7,15 @@
 
 import Foundation
 
+enum ActiveField {
+    case from
+    case to
+}
+enum ActiveCard {
+    case from
+    case to
+}
+
 struct CalculatorViewState {
     var fromCurrency: Currency
     var toCurrency: Currency
@@ -19,29 +28,28 @@ struct CalculatorViewState {
 
 protocol CalculatorViewModelProtocol {
     var state: CalculatorViewState { get set }
-    func fetchExchangeRate() async
-    func updateAmount(_ amount: String, for field: ActiveField)
     var onError: (() -> Void)? { get set }
-    var onStateChanged: (() -> Void)? { get set }
-    func currentToCurrencyIndex() -> Int
-    func swapCards()
+    var onAmountChanged: (() -> Void)? { get set }
     var onSwapTapped: (() -> Void)? { get set }
+    
+    func currentToCurrencyIndex() -> Int
+    func updateAmount(_ amount: String, for field: ActiveField)
+    func swapCards()
+    func fetchExchangeRate() async
 }
 
 final class CalculatorViewModel: CalculatorViewModelProtocol {
     var state: CalculatorViewState
     var onError: (() -> Void)?
-    var onStateChanged: (() -> Void)?
+    var onAmountChanged: (() -> Void)?
     var onSwapTapped: (() -> Void)?
     
     // Получить индекс активного cell
     func currentToCurrencyIndex() -> Int {
         let currencies = DataStore.shared.currencies
-        if state.activeCard == .from {
-            return currencies.firstIndex {$0.name == state.fromCurrency.name && $0.icon == state.fromCurrency.icon} ?? 0
-        } else {
-            return currencies.firstIndex {$0.name == state.toCurrency.name && $0.icon == state.toCurrency.icon} ?? 0
-        }
+        let currentCurrency = state.activeCard == .from ? state.fromCurrency.name : state.toCurrency.name
+        
+        return currencies.firstIndex {$0.name == currentCurrency} ?? 0
     }
     
     // Обновляем значение стейтов которые отвечают за textfield, устанавливаем активный textfield и отправляем сигнал об изменении
@@ -49,27 +57,25 @@ final class CalculatorViewModel: CalculatorViewModelProtocol {
         switch field {
         case .from:
             self.state.fromAmount = Double(amount) ?? 0
+            self.state.activeField = .from
             
             if state.fromCurrency.name == "USDc" {
                 self.state.toAmount = (Double(amount) ?? 0) * (self.state.exchangeRate?.ask ?? 0)
             } else {
                 self.state.toAmount = (Double(amount) ?? 0) / (self.state.exchangeRate?.bid ?? 0)
             }
-            
-            self.state.activeField = .from
-            onStateChanged?()
         case .to:
             self.state.toAmount = Double(amount) ?? 0
+            self.state.activeField = .to
             
             if state.toCurrency.name == "USDc" {
                 self.state.fromAmount = (Double(amount) ?? 0) * (self.state.exchangeRate?.ask ?? 0)
             } else {
                 self.state.fromAmount = (Double(amount) ?? 0) / (self.state.exchangeRate?.bid ?? 0)
             }
-            
-            self.state.activeField = .to
-            onStateChanged?()
         }
+        
+        onAmountChanged?()
     }
     
     func swapCards() {
@@ -86,7 +92,8 @@ final class CalculatorViewModel: CalculatorViewModelProtocol {
     
     // Получить курс текущей валюты
     func fetchExchangeRate() async {
-        let api = "https://api.dolarapp.dev/v1/tickers?currencies=\(state.fromCurrency.name != "USDc" ? state.fromCurrency.name.uppercased() : state.toCurrency.name.uppercased())"
+        let currencyName = state.fromCurrency.name != "USDc" ? state.fromCurrency.name.uppercased() : state.toCurrency.name.uppercased()
+        let api = "https://api.dolarapp.dev/v1/tickers?currencies=\(currencyName)"
         guard let url = URL(string: api) else {
             print("Invalid URL")
             return
@@ -95,10 +102,10 @@ final class CalculatorViewModel: CalculatorViewModelProtocol {
         do {
             self.state.exchangeRate = try await NetworkManager.shared.fetch([ExchangeRate].self, from: url)[0]
         } catch {
-            onError?()
             self.state.exchangeRate = (
                 try? NetworkManager.shared.fetchMockExchangeRate()
             )?[0] ?? ExchangeRate(ask: 1454.5, bid: 1455.5, book: "usdc_ars", date: "2026-07-03")
+            onError?()
         }
     }
     
